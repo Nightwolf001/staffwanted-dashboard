@@ -70,7 +70,15 @@ export default function Router() {
         { path: 'analytics', element: <GeneralAnalytics /> },
         { path: 'banking', element: <GeneralBanking /> },
         { path: 'booking', element: <GeneralBooking /> },
-
+        {
+          path: 'job',
+          children: [
+            { element: <Navigate to="/dashboard/job/list" replace />, index: true },
+            { path: 'list', element: <JobList /> },
+            { path: 'new', element: <JobCreate /> },
+            { path: ':id/edit', element: <JobCreate /> },
+          ],
+        },
         {
           path: 'e-commerce',
           children: [
@@ -182,6 +190,10 @@ const GeneralEcommerce = Loadable(lazy(() => import('../pages/dashboard/GeneralE
 const GeneralAnalytics = Loadable(lazy(() => import('../pages/dashboard/GeneralAnalytics')));
 const GeneralBanking = Loadable(lazy(() => import('../pages/dashboard/GeneralBanking')));
 const GeneralBooking = Loadable(lazy(() => import('../pages/dashboard/GeneralBooking')));
+
+// JOB
+const JobList = Loadable(lazy(() => import('../pages/dashboard/JobList')));
+const JobCreate = Loadable(lazy(() => import('../pages/dashboard/JobCreate')));
 
 // ECOMMERCE
 const EcommerceShop = Loadable(lazy(() => import('../pages/dashboard/EcommerceShop')));

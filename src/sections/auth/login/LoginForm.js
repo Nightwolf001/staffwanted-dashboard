@@ -31,8 +31,8 @@ export default function LoginForm() {
   });
 
   const defaultValues = {
-    email: 'david@bluetron.co.za',
-    password: 'RedWine@84',
+    email: '',
+    password: '',
     remember: true,
   };
 

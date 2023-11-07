@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 // form
 import { useFormContext, Controller } from 'react-hook-form';
 // @mui
-import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { Checkbox, FormControlLabel, FormGroup, Stack } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -47,6 +47,7 @@ export function RHFMultiCheckbox({ name, options, ...other }) {
 
         return (
           <FormGroup>
+            <Stack spacing={1} direction="row">
             {options.map((option) => (
               <FormControlLabel
                 key={option.value}
@@ -60,6 +61,7 @@ export function RHFMultiCheckbox({ name, options, ...other }) {
                 {...other}
               />
             ))}
+            </Stack>
           </FormGroup>
         );
       }}

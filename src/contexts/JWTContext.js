@@ -1,8 +1,12 @@
 import PropTypes from 'prop-types';
 import { createContext, useEffect, useReducer } from 'react';
 // utils
+import { useDispatch, useSelector } from '../redux/store';
+import { setUser } from '../redux/slices/user';
 import axios from '../utils/axios';
 import { isValidToken, setSession } from '../utils/jwt';
+
+const BASE_API = process.env.REACT_APP_API_ENDPOINT;
 
 // ----------------------------------------------------------------------
 
@@ -64,24 +68,28 @@ AuthProvider.propTypes = {
 };
 
 function AuthProvider({ children }) {
+
+  const storeDispatch = useDispatch();
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
     const initialize = async () => {
       try {
+        console.log('initialize');
         const accessToken = localStorage.getItem('accessToken');
 
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
-          const response = await axios.get('/api/users/me');
-          const { user } = response.data;
+          const { data } = await axios.get(`${BASE_API}/api/users/me`);
+          console.log('initialize', data);
 
+          storeDispatch(setUser(data));
           dispatch({
             type: 'INITIALIZE',
             payload: {
               isAuthenticated: true,
-              user,
+              user: data,
             },
           });
         } else {
@@ -110,44 +118,57 @@ function AuthProvider({ children }) {
 
   const login = async (identifier, password) => {
 
-    const { data } = await axios.post('/api/auth/local', {
-      identifier: 'david@bluetron.co.za',
-      password: 'RedWine@84',
+    const { data } = await axios.post(`${BASE_API}/api/auth/local`, {
+      identifier,
+      password,
     });
 
+    console.log('login', data);
     const { jwt, user } = data;
 
     setSession(jwt);
-
+    storeDispatch(setUser(user));
     dispatch({
       type: 'LOGIN',
       payload: {
+        isAuthenticated: true,
         user,
       },
     });
   };
 
-  const register = async (email, password, firstName, lastName) => {
-    const response = await axios.post('/api/account/register', {
-      email,
+  const register = async (companyEmail, password, companyName) => {
+
+    const response = await axios.post(`${BASE_API}/api/employer/register`, {
+      company_email: companyEmail,
       password,
-      firstName,
-      lastName,
+      company_name: companyName,
     });
-    const { accessToken, user } = response.data;
+    
+    if(response) {
+      const { data } = await axios.post(`${BASE_API}/api/auth/local`, {
+        identifier : companyEmail,
+        password,
+      });
 
-    localStorage.setItem('accessToken', accessToken);
+      console.log('register', data);
+      const { jwt, user } = data;
+      setSession(jwt);
+      storeDispatch(setUser(user));
 
-    dispatch({
-      type: 'REGISTER',
-      payload: {
-        user,
-      },
-    });
+      dispatch({
+        type: 'REGISTER',
+        payload: {
+          isAuthenticated: true,
+          user,
+        },
+      });
+     }
   };
 
   const logout = async () => {
     setSession(null);
+    storeDispatch(setUser({}));
     dispatch({ type: 'LOGOUT' });
   };
 

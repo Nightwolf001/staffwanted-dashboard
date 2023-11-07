@@ -7,14 +7,14 @@ import chatReducer from './slices/chat';
 import productReducer from './slices/product';
 import calendarReducer from './slices/calendar';
 import kanbanReducer from './slices/kanban';
-
+import userReducer from './slices/user';
 // ----------------------------------------------------------------------
 
 const rootPersistConfig = {
   key: 'root',
   storage,
   keyPrefix: 'redux-',
-  whitelist: [],
+  whitelist: ['user'],
 };
 
 const productPersistConfig = {
@@ -25,6 +25,7 @@ const productPersistConfig = {
 };
 
 const rootReducer = combineReducers({
+  user: userReducer,
   mail: mailReducer,
   chat: chatReducer,
   calendar: calendarReducer,

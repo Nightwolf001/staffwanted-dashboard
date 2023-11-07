@@ -22,7 +22,20 @@ import {
   AppTopInstalledCountries,
 } from '../../sections/@dashboard/general/app';
 // assets
-import { SeoIllustration } from '../../assets';
+
+import {
+  BookingDetails,
+  BookingBookedRoom,
+  BookingTotalIncomes,
+  BookingRoomAvailable,
+  BookingNewestBooking,
+  BookingWidgetSummary,
+  BookingCheckInWidgets,
+  BookingCustomerReviews,
+  BookingReservationStats,
+} from '../../sections/@dashboard/general/booking';
+// assets
+import { BookingIllustration, CheckInIllustration, CheckOutIllustration, SeoIllustration } from '../../assets';
 
 // ----------------------------------------------------------------------
 
@@ -37,7 +50,7 @@ export default function GeneralApp() {
     <Page title="General: App">
       <Container maxWidth={themeStretch ? false : 'xl'}>
         <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
+          {/* <Grid item xs={12} md={8}>
             <AppWelcome
               title={`Welcome back! \n ${user?.displayName}`}
               description="If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything."
@@ -52,15 +65,27 @@ export default function GeneralApp() {
               }
               action={<Button variant="contained">Go Now</Button>}
             />
-          </Grid>
+          </Grid> */}
 
-          <Grid item xs={12} md={4}>
+          {/* <Grid item xs={12} md={4}>
             <AppFeatured list={_appFeatured} />
+          </Grid> */}
+
+          <Grid item xs={12} md={4}>
+            <BookingWidgetSummary title="Total Applications" total={71} icon={<BookingIllustration />} />
           </Grid>
 
           <Grid item xs={12} md={4}>
+            <BookingWidgetSummary title="Pending Review" total={31} icon={<CheckInIllustration />} />
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <BookingWidgetSummary title="In Review" total={124} icon={<CheckOutIllustration />} />
+          </Grid>
+
+          {/* <Grid item xs={12} md={4}>
             <AppWidgetSummary
-              title="Total Active Users"
+              title="Total Applicants"
               percent={2.6}
               total={18765}
               chartColor={theme.palette.primary.main}
@@ -70,7 +95,7 @@ export default function GeneralApp() {
 
           <Grid item xs={12} md={4}>
             <AppWidgetSummary
-              title="Total Installed"
+              title="Total Pending"
               percent={0.2}
               total={4876}
               chartColor={theme.palette.chart.blue[0]}
@@ -80,15 +105,15 @@ export default function GeneralApp() {
 
           <Grid item xs={12} md={4}>
             <AppWidgetSummary
-              title="Total Downloads"
+              title="Total Reviewd"
               percent={-0.1}
               total={678}
               chartColor={theme.palette.chart.red[0]}
               chartData={[8, 9, 31, 8, 16, 37, 8, 33, 46, 31]}
             />
-          </Grid>
+          </Grid> */}
 
-          <Grid item xs={12} md={6} lg={4}>
+          {/* <Grid item xs={12} md={6} lg={4}>
             <AppCurrentDownload
               title="Current Download"
               chartColors={[
@@ -128,25 +153,25 @@ export default function GeneralApp() {
                 },
               ]}
             />
-          </Grid>
+          </Grid> */}
 
-          <Grid item xs={12} lg={8}>
+          <Grid item xs={12} lg={12}>
             <AppNewInvoice
-              title="New Invoice"
+              title="New Apllications"
               tableData={_appInvoices}
               tableLabels={[
-                { id: 'id', label: 'Invoice ID' },
-                { id: 'category', label: 'Category' },
-                { id: 'price', label: 'Price' },
+                { id: 'id', label: 'Job ID' },
+                { id: 'category', label: 'Location' },
+                { id: 'price', label: 'Name' },
                 { id: 'status', label: 'Status' },
                 { id: '' },
               ]}
             />
           </Grid>
 
-          <Grid item xs={12} md={6} lg={4}>
+          {/* <Grid item xs={12} md={6} lg={4}>
             <AppTopRelated title="Top Related Applications" list={_appRelated} />
-          </Grid>
+          </Grid> */}
 
           <Grid item xs={12} md={6} lg={4}>
             <AppTopInstalledCountries title="Top Installed Countries" list={_appInstalled} />

@@ -60,6 +60,16 @@ const navConfig = [
         ],
       },
 
+      // JOB
+      {
+        title: 'job',
+        path: PATH_DASHBOARD.job.root,
+        icon: ICONS.cart,
+        children: [
+          { title: 'list', path: PATH_DASHBOARD.job.list },
+        ],
+      },
+
       // E-COMMERCE
       {
         title: 'ecommerce',

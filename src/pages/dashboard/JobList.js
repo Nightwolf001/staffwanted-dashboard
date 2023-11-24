@@ -9,7 +9,6 @@ import { Container, Typography, Stack, Button } from '@mui/material';
 import { getEmployerJobs } from '../../api/staffwanted-api';
 // redux
 import { useDispatch, useSelector } from '../../redux/store';
-import { getProducts, filterProducts } from '../../redux/slices/product';
 // routes
 import { PATH_DASHBOARD } from '../../routes/paths';
 // hooks
@@ -32,8 +31,6 @@ export default function JobList() {
 
   const dispatch = useDispatch();
   const {user} = useSelector((state) => state.user);
-
-  console.log(user);
 
   const [jobs, setJobs] = useState([]);
 

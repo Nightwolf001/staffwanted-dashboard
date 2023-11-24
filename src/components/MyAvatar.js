@@ -2,22 +2,23 @@
 import useAuth from '../hooks/useAuth';
 // utils
 import createAvatar from '../utils/createAvatar';
+// redux
+import { useDispatch, useSelector } from '../redux/store';
 //
 import Avatar from './Avatar';
 
 // ----------------------------------------------------------------------
 
 export default function MyAvatar({ ...other }) {
-  const { user } = useAuth();
-
+  const { employer, user } = useSelector((state) => state.user);
   return (
     <Avatar
-      src={user?.photoURL}
-      alt={user?.displayName}
-      color={user?.photoURL ? 'default' : createAvatar(user?.displayName).color}
+      src={employer?.company_avatar_url}
+      alt={employer?.company_name}
+      color={employer?.company_avatar_url ? 'default' : createAvatar(employer?.company_name).color}
       {...other}
     >
-      {createAvatar(user?.displayName).name}
+      {createAvatar(employer?.company_name).name}
     </Avatar>
   );
 }

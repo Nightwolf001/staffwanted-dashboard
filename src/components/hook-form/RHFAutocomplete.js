@@ -14,7 +14,7 @@ RHFAutocomplete.propTypes = {
 
 export default function RHFAutocomplete({ name, label, helperText, ...other }) {
   const { control, setValue } = useFormContext();
-  
+
   return (
     <Controller
       name={name}

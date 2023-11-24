@@ -11,6 +11,7 @@ const getIcon = (name) => <SvgIconStyle src={`/assets/icons/navbar/${name}.svg`}
 
 const ICONS = {
   blog: getIcon('ic_blog'),
+  search: getIcon('ic_search'),
   cart: getIcon('ic_cart'),
   chat: getIcon('ic_chat'),
   mail: getIcon('ic_mail'),
@@ -33,6 +34,7 @@ const navConfig = [
     subheader: 'general',
     items: [
       { title: 'app', path: PATH_DASHBOARD.general.app, icon: ICONS.dashboard },
+      { title: 'company profile', path: PATH_DASHBOARD.company.account, icon: ICONS.user},
       { title: 'ecommerce', path: PATH_DASHBOARD.general.ecommerce, icon: ICONS.ecommerce },
       { title: 'analytics', path: PATH_DASHBOARD.general.analytics, icon: ICONS.analytics },
       { title: 'banking', path: PATH_DASHBOARD.general.banking, icon: ICONS.banking },
@@ -46,45 +48,41 @@ const navConfig = [
     subheader: 'management',
     items: [
       // USER
-      {
-        title: 'user',
-        path: PATH_DASHBOARD.user.root,
-        icon: ICONS.user,
-        children: [
-          { title: 'profile', path: PATH_DASHBOARD.user.profile },
-          { title: 'cards', path: PATH_DASHBOARD.user.cards },
-          { title: 'list', path: PATH_DASHBOARD.user.list },
-          { title: 'create', path: PATH_DASHBOARD.user.new },
-          { title: 'edit', path: PATH_DASHBOARD.user.demoEdit },
-          { title: 'account', path: PATH_DASHBOARD.user.account },
-        ],
-      },
+      // {
+      //   title: 'user',
+      //   path: PATH_DASHBOARD.user.root,
+      //   icon: ICONS.user,
+      //   children: [
+      //     { title: 'profile', path: PATH_DASHBOARD.user.profile },
+      //     { title: 'cards', path: PATH_DASHBOARD.user.cards },
+      //     { title: 'list', path: PATH_DASHBOARD.user.list },
+      //     { title: 'create', path: PATH_DASHBOARD.user.new },
+      //     { title: 'edit', path: PATH_DASHBOARD.user.demoEdit },
+      //     { title: 'account', path: PATH_DASHBOARD.user.account },
+      //   ],
+      // },
 
       // JOB
       {
-        title: 'job',
+        title: 'job listings',
         path: PATH_DASHBOARD.job.root,
-        icon: ICONS.cart,
+        icon: ICONS.kanban,
         children: [
           { title: 'list', path: PATH_DASHBOARD.job.list },
         ],
       },
-
-      // E-COMMERCE
+      // Applicants
       {
-        title: 'ecommerce',
-        path: PATH_DASHBOARD.eCommerce.root,
-        icon: ICONS.cart,
-        children: [
-          { title: 'shop', path: PATH_DASHBOARD.eCommerce.shop },
-          { title: 'product', path: PATH_DASHBOARD.eCommerce.demoView },
-          { title: 'list', path: PATH_DASHBOARD.eCommerce.list },
-          { title: 'create', path: PATH_DASHBOARD.eCommerce.new },
-          { title: 'edit', path: PATH_DASHBOARD.eCommerce.demoEdit },
-          { title: 'checkout', path: PATH_DASHBOARD.eCommerce.checkout },
-        ],
+        title: 'job applicants',
+        path: PATH_DASHBOARD.applicants.list,
+        icon: ICONS.user,
       },
-
+      // Search Staff
+      {
+        title: 'search for employees',
+        path: PATH_DASHBOARD.employees.list,
+        icon: ICONS.menuItem,
+      },
       // INVOICE
       {
         title: 'invoice',
@@ -129,7 +127,7 @@ const navConfig = [
     ],
   },
 
-  // DEMO MENU STATES
+  // // DEMO MENU STATES
   {
     subheader: 'Other cases',
     items: [

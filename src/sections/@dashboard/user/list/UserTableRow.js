@@ -13,12 +13,12 @@ import { TableMoreMenu } from '../../../../components/table';
 UserTableRow.propTypes = {
   row: PropTypes.object,
   selected: PropTypes.bool,
-  onEditRow: PropTypes.func,
+  onViewRow: PropTypes.func,
   onSelectRow: PropTypes.func,
   onDeleteRow: PropTypes.func,
 };
 
-export default function UserTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRow }) {
+export default function UserTableRow({ row, selected, onViewRow, onSelectRow, onDeleteRow }) {
   const theme = useTheme();
 
   const { name, avatarUrl, company, role, isVerified, status } = row;
@@ -93,12 +93,12 @@ export default function UserTableRow({ row, selected, onEditRow, onSelectRow, on
               </MenuItem>
               <MenuItem
                 onClick={() => {
-                  onEditRow();
+                  onViewRow();
                   handleCloseMenu();
                 }}
               >
                 <Iconify icon={'eva:edit-fill'} />
-                Edit
+                View
               </MenuItem>
             </>
           }

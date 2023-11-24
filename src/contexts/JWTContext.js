@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { createContext, useEffect, useReducer } from 'react';
 // utils
 import { useDispatch, useSelector } from '../redux/store';
-import { setUser } from '../redux/slices/user';
+import { setUser, setEmployer } from '../redux/slices/user';
 import axios from '../utils/axios';
 import { isValidToken, setSession } from '../utils/jwt';
 
@@ -82,9 +82,12 @@ function AuthProvider({ children }) {
           setSession(accessToken);
 
           const { data } = await axios.get(`${BASE_API}/api/users/me`);
-          console.log('initialize', data);
-
           storeDispatch(setUser(data));
+      
+          if(data.user_type === 'employer') {
+             await employer(data.profile_id);
+          }
+          
           dispatch({
             type: 'INITIALIZE',
             payload: {
@@ -164,6 +167,11 @@ function AuthProvider({ children }) {
         },
       });
      }
+  };
+
+  const employer = async (profileId) => {
+      const {data} = await axios.get(`${BASE_API}/api/employers/${profileId}`);
+      storeDispatch(setEmployer(data.data.attributes));
   };
 
   const logout = async () => {

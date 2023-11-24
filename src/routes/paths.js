@@ -65,11 +65,25 @@ export const PATH_DASHBOARD = {
     edit: (name) => path(ROOTS_DASHBOARD, `/user/${name}/edit`),
     demoEdit: path(ROOTS_DASHBOARD, `/user/reece-chung/edit`),
   },
+  company: {
+    account: path(ROOTS_DASHBOARD, '/company/account'),
+    edit: (name) => path(ROOTS_DASHBOARD, `/company/${name}/edit`),
+  },
+  applicants: {
+    list: path(ROOTS_DASHBOARD, '/applicants/list'),
+    view: (id) => path(ROOTS_DASHBOARD, `/applicants/${id}/view`),
+  },
+  employees: {
+    list: path(ROOTS_DASHBOARD, '/employees/list'),
+    view: (id) => path(ROOTS_DASHBOARD, `/employees/${id}/view`),
+  },
   job: {
     root: path(ROOTS_DASHBOARD, '/job'),
     list: path(ROOTS_DASHBOARD, '/job/list'),
     new: path(ROOTS_DASHBOARD, '/job/new'),
+    view: (id) => path(ROOTS_DASHBOARD, `/job/${id}/view`),
     edit: (id) => path(ROOTS_DASHBOARD, `/job/${id}/edit`),
+    candidate: (id, job_id) => path(ROOTS_DASHBOARD, `/job/${id}/${job_id}/candidate`),
   },
   eCommerce: {
     root: path(ROOTS_DASHBOARD, '/e-commerce'),

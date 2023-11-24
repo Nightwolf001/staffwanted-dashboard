@@ -77,6 +77,30 @@ export default function Router() {
             { path: 'list', element: <JobList /> },
             { path: 'new', element: <JobCreate /> },
             { path: ':id/edit', element: <JobCreate /> },
+            { path: ':id/view', element: <JobDetails /> },
+            { path: ':id/:job_id/candidate', element: <CandidatesProfile /> },
+          ],
+        },
+        {
+          path: 'applicants',
+          children: [
+            { element: <Navigate to="/dashboard/applicants/list" replace />, index: true },
+            { path: 'list', element: <ApplicantsList /> },
+          ],
+        },
+        {
+          path: 'company',
+          children: [
+            { element: <Navigate to="/dashboard/company/account" replace />, index: true },
+            { path: 'account', element: <CompanyAccount /> },
+          ],
+        },
+        {
+          path: 'employees',
+          children: [
+            { element: <Navigate to="/dashboard/employees/list" replace />, index: true },
+            { path: 'list', element: <EmployeeList /> },
+            { path: ':id/view', element: <EmployeeProfile /> },
           ],
         },
         {
@@ -194,6 +218,19 @@ const GeneralBooking = Loadable(lazy(() => import('../pages/dashboard/GeneralBoo
 // JOB
 const JobList = Loadable(lazy(() => import('../pages/dashboard/JobList')));
 const JobCreate = Loadable(lazy(() => import('../pages/dashboard/JobCreate')));
+const JobDetails = Loadable(lazy(() => import('../pages/dashboard/JobDetails')));
+const CandidatesProfile = Loadable(lazy(() => import('../pages/dashboard/CandidatesProfile')));
+
+
+// JOB
+const ApplicantsList = Loadable(lazy(() => import('../pages/dashboard/ApplicantsList')));
+
+// COMPANY
+const CompanyAccount = Loadable(lazy(() => import('../pages/dashboard/CompanyAccount')));
+
+// Employee
+const EmployeeList = Loadable(lazy(() => import('../pages/dashboard/EmployeeList')));
+const EmployeeProfile = Loadable(lazy(() => import('../pages/dashboard/EmployeeProfile')));
 
 // ECOMMERCE
 const EcommerceShop = Loadable(lazy(() => import('../pages/dashboard/EcommerceShop')));

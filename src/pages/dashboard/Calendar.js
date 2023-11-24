@@ -4,13 +4,14 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import timelinePlugin from '@fullcalendar/timeline';
 import interactionPlugin from '@fullcalendar/interaction';
-//
 import { useState, useRef, useEffect } from 'react';
 // @mui
 import { Card, Button, Container, DialogTitle } from '@mui/material';
 // redux
 import { useDispatch, useSelector } from '../../redux/store';
 import { getEvents, openModal, closeModal, updateEvent, selectEvent, selectRange } from '../../redux/slices/calendar';
+// api
+import { getCalendarEvents, getEmployerJobs, getApplicantsByJobs } from '../../api/staffwanted-api';
 // routes
 import { PATH_DASHBOARD } from '../../routes/paths';
 // hooks
@@ -24,13 +25,12 @@ import HeaderBreadcrumbs from '../../components/HeaderBreadcrumbs';
 // sections
 import { CalendarForm, CalendarStyle, CalendarToolbar } from '../../sections/@dashboard/calendar';
 
+const _ = require('lodash');
 // ----------------------------------------------------------------------
 
 const selectedEventSelector = (state) => {
   const { events, selectedEventId } = state.calendar;
-  if (selectedEventId) {
-    return events.find((_event) => _event.id === selectedEventId);
-  }
+  if (selectedEventId) {return events.find((_event) => _event.id === parseInt(selectedEventId, 10))}
   return null;
 };
 
@@ -39,20 +39,19 @@ export default function Calendar() {
 
   const dispatch = useDispatch();
 
+  const { user } = useSelector((state) => state.user);
   const isDesktop = useResponsive('up', 'sm');
 
   const calendarRef = useRef(null);
 
   const [date, setDate] = useState(new Date());
-
   const [view, setView] = useState(isDesktop ? 'dayGridMonth' : 'listWeek');
 
   const selectedEvent = useSelector(selectedEventSelector);
-
   const { events, isOpenModal, selectedRange } = useSelector((state) => state.calendar);
 
   useEffect(() => {
-    dispatch(getEvents());
+    dispatch(getEvents(user.profile_id));
   }, [dispatch]);
 
   useEffect(() => {
@@ -204,8 +203,7 @@ export default function Calendar() {
         </Card>
 
         <DialogAnimate open={isOpenModal} onClose={handleCloseModal}>
-          <DialogTitle>{selectedEvent ? 'Edit Event' : 'Add Event'}</DialogTitle>
-
+          <DialogTitle>{selectedEvent ? 'Edit Meeting Details' : 'New Meeting Request'}</DialogTitle>
           <CalendarForm event={selectedEvent || {}} range={selectedRange} onCancel={handleCloseModal} />
         </DialogAnimate>
       </Container>

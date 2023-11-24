@@ -15,7 +15,7 @@ import { _userList } from '../../_mock';
 import Page from '../../components/Page';
 import HeaderBreadcrumbs from '../../components/HeaderBreadcrumbs';
 // sections
-import JobNewEditForm from '../../sections/@dashboard/jobs/JobNewEditForm';
+import JobNewEditForm from '../../sections/@dashboard/jobs/new-edit-form/JobNewEditForm';
 
 // ----------------------------------------------------------------------
 

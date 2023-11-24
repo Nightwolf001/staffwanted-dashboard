@@ -1,9 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
+import moment from 'moment';
 // utils
 import axios from '../../utils/axios';
+import { getCalendarEvents, createCalendarEvents } from '../../api/staffwanted-api';
 //
 import { dispatch } from '../store';
 
+const _ = require('lodash');
 // ----------------------------------------------------------------------
 
 const initialState = {
@@ -92,6 +95,40 @@ const slice = createSlice({
   },
 });
 
+const formatEvents = async (rawEvents) => {
+  const events = _.map(rawEvents, event => ({
+    id: event.id,
+    title: event.attributes.title,
+    description: event.attributes.description,
+    allDay: event.attributes.all_day,
+    status: event.attributes.status,
+    textColor: event.attributes.text_color,
+    job: event.attributes.job.data.attributes.id,
+    employee: event.attributes.employee.data.attributes.id,
+    employer: event.attributes.employer.data.attributes.id,
+    start: new Date(event.attributes.start),
+    end: new Date(event.attributes.end),
+  })); 
+  return events;
+}
+
+const formatEvent = async (rawEvent) => {
+  const event = {
+    id: rawEvent.id,
+    title: rawEvent.attributes.title,
+    description: rawEvent.attributes.description,
+    allDay: rawEvent.attributes.all_day,
+    status: rawEvent.attributes.status,
+    textColor: rawEvent.attributes.text_color,
+    job: rawEvent.attributes.job.data.attributes.id,
+    employee: rawEvent.attributes.employee.data.attributes.id,
+    employer: rawEvent.attributes.employer.data.attributes.id,
+    start: new Date(rawEvent.attributes.start),
+    end: new Date(rawEvent.attributes.end),
+  };
+  return event;
+}
+
 // Reducer
 export default slice.reducer;
 
@@ -100,12 +137,14 @@ export const { openModal, closeModal, selectEvent } = slice.actions;
 
 // ----------------------------------------------------------------------
 
-export function getEvents() {
+export function getEvents(id) {
   return async () => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await axios.get('/api/calendar/events');
-      dispatch(slice.actions.getEventsSuccess(response.data.events));
+     
+      const { data } = await getCalendarEvents(id);
+      const events = await formatEvents(data);
+      dispatch(slice.actions.getEventsSuccess(events));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
@@ -118,8 +157,9 @@ export function createEvent(newEvent) {
   return async () => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await axios.post('/api/calendar/events/new', newEvent);
-      dispatch(slice.actions.createEventSuccess(response.data.event));
+      const { data } = await createCalendarEvents(newEvent);
+      const event = await formatEvent(data);
+      dispatch(slice.actions.createEventSuccess(event));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }

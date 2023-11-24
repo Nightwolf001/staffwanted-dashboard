@@ -5,6 +5,8 @@ import { styled } from '@mui/material/styles';
 import { Box, Link, Typography } from '@mui/material';
 // hooks
 import useAuth from '../../../hooks/useAuth';
+// redux
+import { useDispatch, useSelector } from '../../../redux/store';
 // routes
 import { PATH_DASHBOARD } from '../../../routes/paths';
 // components
@@ -30,10 +32,11 @@ NavbarAccount.propTypes = {
 };
 
 export default function NavbarAccount({ isCollapse }) {
-  const { user } = useAuth();
+  
+  const { employer, user } = useSelector((state) => state.user);
 
   return (
-    <Link underline="none" color="inherit" component={RouterLink} to={PATH_DASHBOARD.user.account}>
+    <Link underline="none" color="inherit" component={RouterLink} to={PATH_DASHBOARD.company.account}>
       <RootStyle
         sx={{
           ...(isCollapse && {
@@ -57,10 +60,10 @@ export default function NavbarAccount({ isCollapse }) {
           }}
         >
           <Typography variant="subtitle2" noWrap>
-            {user?.displayName}
+            {employer?.company_name}
           </Typography>
           <Typography variant="body2" noWrap sx={{ color: 'text.secondary' }}>
-            {user?.role}
+            Tokens: {employer?.tokens}
           </Typography>
         </Box>
       </RootStyle>

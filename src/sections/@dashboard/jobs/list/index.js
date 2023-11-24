@@ -40,20 +40,9 @@ export default function JobItemList({ jobs }) {
   const navigate = useNavigate();
 
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gap: 3,
-        gridTemplateColumns: {
-          xs: 'repeat(1, 1fr)',
-          sm: 'repeat(2, 1fr)',
-          md: 'repeat(3, 1fr)',
-          lg: 'repeat(3, 1fr)',
-        },
-      }}
-    >
+    <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(3, 1fr)',}}}>
      {jobs.length !== 0 && jobs.map((job, i) => (
-        <Card key={i} sx={{cursor: "pointer"}} onClick={() => navigate(PATH_DASHBOARD.job.edit(job.id))}>
+        <Card key={i} sx={{cursor: "pointer"}} onClick={() => navigate(PATH_DASHBOARD.job.view(job.id))}>
             <Box sx={{ position: 'relative', p: 2.5 }}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={12} md={12} lg={12}>
@@ -66,7 +55,14 @@ export default function JobItemList({ jobs }) {
                     <Grid item xs={12} sm={12} md={12} lg={12}>
                         <Typography variant="subtitle1">{job.attributes.title}</Typography>
                         <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }} noWrap>{job.attributes.location}</Typography>
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>Posted: {moment(job.attributes.createdAt).format('YYYY-MM-DD')}</Typography>
+                        {job.attributes.published ? 
+                        <>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>Published</Typography>
+                        </>
+                        :
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>Draft</Typography>
+                        }
+
                         <ItemBlockStyle sx={{mt: 1}}>
                           <ItemIconStyle sx={{ color: 'primary.main' }} icon={'mdi:account-multiple'} />
                           <Typography variant="body2" sx={{ color: 'primary.main' }} noWrap> {job.attributes.employee_job_matches.data.length} Candidates</Typography>

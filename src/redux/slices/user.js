@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   user: {},
+  employer: {},
 };
 console.log('initialState', initialState);
 const slice = createSlice({
@@ -10,8 +11,10 @@ const slice = createSlice({
   reducers: {
     
     setUser(state, action) {
-      console.log('action.payload', action.payload);
       state.user = action.payload;
+    },
+    setEmployer(state, action) {
+      state.employer = action.payload;
     },
 
   },
@@ -19,6 +22,6 @@ const slice = createSlice({
 
 export default slice.reducer;
 
-export const { setUser } = slice.actions;
+export const { setUser, setEmployer } = slice.actions;
 
 

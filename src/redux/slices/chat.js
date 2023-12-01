@@ -1,8 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 // utils
 import axios from '../../utils/axios';
+import { getEmployerContacts, getEmployerConversations, getConversationParticipants, getConversationMessages, createMessage } from '../../api/staffwanted-api';
 //
 import { dispatch } from '../store';
+
+const _ = require('lodash');
 
 // ----------------------------------------------------------------------
 
@@ -11,6 +14,52 @@ function objFromArray(array, key = 'id') {
     accumulator[current[key]] = current;
     return accumulator;
   }, {});
+}
+
+const formatContacts = async (contacts, employer_id) => {
+  const _contacts = _.map(contacts, contact => ({
+    id: contact.id,
+    name: `${contact.attributes.first_name} ${contact.attributes.last_name}`,
+    username: contact.attributes.first_name,
+    avatar: contact.attributes.avatar_url,
+    address: contact.attributes.location,
+    phone: contact.attributes.phone_number,
+    email: contact.attributes.email,
+    lastActivity: new Date(),
+    status: 'online',
+    conversation_key: contact.attributes.conversations.length !== 0 ? _.find(contact.attributes.conversations, item => item.employer.id === parseInt(employer_id, 10)) : null,
+  }));
+  return _contacts;
+}
+
+const formatContact = async (contact) => {
+  const _contact = {
+    id: contact.id,
+    name: `${contact.attributes.first_name} ${contact.attributes.last_name}`,
+    username: contact.attributes.first_name,
+    avatar: contact.attributes.avatar_url,
+    address: contact.attributes.location,
+    phone: contact.attributes.phone_number,
+    email: contact.attributes.email,
+    lastActivity: new Date(),
+    status: 'online',
+  };
+  return _contact;
+}
+
+const formatEmployer = async (contact) => {
+  const _contact = {
+    id: contact.id,
+    name: contact.attributes.company_name,
+    username: contact.attributes.company_name,
+    avatar: contact.attributes.company_avatar_url,
+    address: contact.attributes.company_location,
+    phone: contact.attributes.company_number,
+    email: contact.attributes.company_email,
+    lastActivity: new Date(),
+    status: 'online',
+  };
+  return _contact;
 }
 
 const initialState = {
@@ -72,7 +121,7 @@ const slice = createSlice({
     // ON SEND MESSAGE
     onSendMessage(state, action) {
       const conversation = action.payload;
-      const { conversationId, messageId, message, contentType, attachments, createdAt, senderId } = conversation;
+      const { conversationId, messageId, message, contentType, attachments, createdAt, senderId, senderType } = conversation;
 
       const newMessage = {
         id: messageId,
@@ -81,6 +130,23 @@ const slice = createSlice({
         attachments,
         createdAt,
         senderId,
+        senderType,
+      };
+      
+      state.conversations.byId[conversationId].messages.push(newMessage);
+    },
+
+    onRecieveMessage(state, action) {
+      const conversation = action.payload;
+      const { conversationId, messageId, message, contentType, attachments, createdAt, senderId, senderType } = conversation;
+      const newMessage = {
+        id: messageId,
+        body: message,
+        contentType,
+        attachments,
+        createdAt,
+        senderId,
+        senderType,
       };
 
       state.conversations.byId[conversationId].messages.push(newMessage);
@@ -116,16 +182,17 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { addRecipients, onSendMessage, resetActiveConversation } = slice.actions;
+export const { addRecipients, onSendMessage, resetActiveConversation, onRecieveMessage } = slice.actions;
 
 // ----------------------------------------------------------------------
 
-export function getContacts() {
+export function getContacts(employer_id) {
   return async () => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await axios.get('/api/chat/contacts');
-      dispatch(slice.actions.getContactsSuccess(response.data.contacts));
+      const { data } = await getEmployerContacts(employer_id);
+      const contacts = await formatContacts(data, employer_id);
+      dispatch(slice.actions.getContactsSuccess(contacts));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
@@ -134,12 +201,53 @@ export function getContacts() {
 
 // ----------------------------------------------------------------------
 
-export function getConversations() {
+export function getConversations(employer_id) {
   return async () => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await axios.get('/api/chat/conversations');
-      dispatch(slice.actions.getConversationsSuccess(response.data.conversations));
+      const { data } = await getEmployerConversations(employer_id);
+      let conversations = [];
+      console.log('getConversations', data.length);
+      for (let i = 0; i < data.length; i++)  {
+        
+        const item = data[i];
+        
+          const participants = []
+          const employee = await formatContact(item.attributes.employee.data);
+          employee.type = 'employee';
+          participants.push(employee);
+          const employer = await formatEmployer(item.attributes.employer.data);
+          employer.type = 'employer';
+          participants.push(employer);
+
+          let messages = [];
+
+          if (item.attributes.messages.data.length !== 0) {
+            messages = _.map(item.attributes.messages.data, message => ({
+              id: message.attributes.message_id,
+              body: message.attributes.body,
+              contentType: message.attributes.content_type,
+              attachments: [],
+              createdAt: message.attributes.createdAt,
+              senderId: message.attributes.sender_id,
+              senderType: message.attributes.sender_type,
+            }));
+          }
+
+          const conversation = {
+            id: item.id,
+            messages,
+            participants,
+            unreadCount: 0,
+            type: item.attributes.type,
+          };
+
+          console.log('conversation', conversation);
+          conversations.push(conversation);
+        
+      }
+      console.log('conversations', conversations);
+      dispatch(slice.actions.getConversationsSuccess(conversations));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
@@ -152,10 +260,49 @@ export function getConversation(conversationKey) {
   return async () => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await axios.get('/api/chat/conversation', {
-        params: { conversationKey },
-      });
-      dispatch(slice.actions.getConversationSuccess(response.data.conversation));
+      
+      const { data } = await getConversationMessages(conversationKey);
+      console.log('getConversation', data);
+
+      const participants = []
+      const employee = await formatContact(data.attributes.employee.data);
+      employee.type = 'employee';
+      participants.push(employee);
+      const employer = await formatEmployer(data.attributes.employer.data);
+      employer.type = 'employer';
+      participants.push(employer);
+      let messages = [];
+      // const newMessage = {
+      //   id: messageId,
+      //   body: message,
+      //   contentType,
+      //   attachments,
+      //   createdAt,
+      //   senderId,
+      //   senderType,
+      // };
+      if (data.attributes.messages.data.length !== 0) {
+        messages = _.map(data.attributes.messages.data, message => ({
+          id: message.attributes.message_id,
+          body: message.attributes.body,
+          contentType: message.attributes.content_type,
+          attachments: [],
+          createdAt: message.attributes.createdAt,
+          senderId: message.attributes.sender_id,
+          senderType: message.attributes.sender_type,
+        }));
+      }
+
+      console.log('messages', messages);
+      const conversation = {
+        id: data.id,
+        messages,
+        participants,
+        unreadCount: 0,
+        type: '',
+      };
+      console.log('conversation', conversation);
+      dispatch(slice.actions.getConversationSuccess(conversation));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
@@ -184,10 +331,13 @@ export function getParticipants(conversationKey) {
   return async () => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await axios.get('/api/chat/participants', {
-        params: { conversationKey },
-      });
-      dispatch(slice.actions.getParticipantsSuccess(response.data.participants));
+      const {data} =  await getConversationParticipants(conversationKey);
+      const participants = []
+      const employee = await formatContact(data.attributes.employee.data);
+      participants.push(employee);
+      const employer = await formatEmployer(data.attributes.employer.data);
+      participants.push(employer);
+      dispatch(slice.actions.getParticipantsSuccess(participants));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }

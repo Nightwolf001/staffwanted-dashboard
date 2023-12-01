@@ -224,4 +224,125 @@ export const createCalendarEvents = async (event) => {
     console.error(ex.message);
   }
 };
+
+export const updateCalendarEvents = async (id, event) => {
+  try {
+    const { data } = await axiosAuthInstance.put(`${baseUrl}/api/calendars/${id}?populate=*`, { data: event });
+    console.log('createCalendarEvents', data);
+    return data;
+  } catch (ex) {
+    console.error(ex);
+    console.error(ex.message);
+  }
+};
+
+export const getEventLogs = async (job_id, employee_id) => {
+  try {
+    const { data } = await axiosAuthInstance.get(`${baseUrl}/api/event-logs/job/${job_id}/employee/${employee_id}/?populate=*`);
+    console.log('getEventLogs', data);
+    return data;
+  } catch (ex) {
+    console.error(ex);
+    console.error(ex.message);
+  }
+};
+
+export const createEventLog = async (event) => {
+  try {
+    const { data } = await axiosAuthInstance.post(`${baseUrl}/api/event-logs/?populate=*`, { data: event });
+    console.log('createEventLog', data);
+    return data;
+  } catch (ex) {
+    console.error(ex);
+    console.error(ex.message);
+  }
+};
+
+export const updateEventLog = async (id, event) => {
+  try {
+    const { data } = await axiosAuthInstance.put(`${baseUrl}/api/event-logs/${id}?populate=*`, { data: event });
+    console.log('updateEventLog', data);
+    return data;
+  } catch (ex) {
+    console.error(ex);
+    console.error(ex.message);
+  }
+};
+
+export const getEmployerConversations = async (employee_id) => {
+  try {
+    const { data } = await axiosAuthInstance.get(`${baseUrl}/api/conversations/employer/${employee_id}/?populate=*`);
+    console.log('getEmployerConversations', data);
+    return data;
+  } catch (ex) {
+    console.error(ex);
+    console.error(ex.message);
+  }
+};
+
+export const getConversationParticipants = async (id) => {
+  try {
+    const { data } = await axiosAuthInstance.get(`${baseUrl}/api/conversations/participants/${id}`);
+    console.log('getConversationParticipants', data);
+    return data;
+  } catch (ex) {
+    console.error(ex);
+    console.error(ex.message);
+  }
+};
+
+export const getConversationMessages = async (id) => {
+  try {
+    const { data } = await axiosAuthInstance.get(`${baseUrl}/api/conversations/messages/${id}`);
+    console.log('getConversationMessages', data);
+    return data;
+  } catch (ex) {
+    console.error(ex);
+    console.error(ex.message);
+  }
+};
+
+export const createMessage = async (message) => {
+  try {
+    const { data } = await axiosAuthInstance.post(`${baseUrl}/api/messages/?populate=*`, { data: message });
+    console.log('createMessage', data);
+    return data;
+  } catch (ex) {
+    console.error(ex);
+    console.error(ex.message);
+  }
+};
+
+export const broadcastMessage = async (message) => {
+  try {
+    const { data } = await axiosAuthInstance.post(`${baseUrl}/api/messages/?populate=*`, { data: message });
+    console.log('createMessage', data);
+    return data;
+  } catch (ex) {
+    console.error(ex);
+    console.error(ex.message);
+  }
+};
+
+export const getEmployerContacts = async (employee_id) => {
+  try {
+    const { data } = await axiosAuthInstance.get(`${baseUrl}/api/conversations/contacts/${employee_id}/?populate=*`);
+    console.log('getEmployerContacts', data);
+    return data;
+  } catch (ex) {
+    console.error(ex);
+    console.error(ex.message);
+  }
+};
+
+export const searchEmployerContacts = async (employee_id, query) => {
+  try {
+    const { data } = await axiosAuthInstance.get(`${baseUrl}/api/conversations/contacts/${employee_id}/?search=${query}`);
+    console.log('searchEmployerContacts', data);
+    return data;
+  } catch (ex) {
+    console.error(ex);
+    console.error(ex.message);
+  }
+};
 //

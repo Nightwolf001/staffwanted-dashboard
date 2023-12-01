@@ -5,6 +5,7 @@ import { styled } from '@mui/material/styles';
 import { Stack, Input, Divider, IconButton, InputAdornment } from '@mui/material';
 // utils
 import uuidv4 from '../../../utils/uuidv4';
+import { useSelector } from '../../../redux/store';
 // components
 import Iconify from '../../../components/Iconify';
 import EmojiPicker from '../../../components/EmojiPicker';
@@ -23,13 +24,16 @@ const RootStyle = styled('div')(({ theme }) => ({
 
 ChatMessageInput.propTypes = {
   disabled: PropTypes.bool,
-  conversationId: PropTypes.string,
+  conversationId: PropTypes.number,
   onSend: PropTypes.func,
 };
 
 export default function ChatMessageInput({ disabled, conversationId, onSend }) {
+
   const fileInputRef = useRef(null);
   const [message, setMessage] = useState('');
+
+  const { user } = useSelector((state) => state.user);
 
   const handleAttach = () => {
     fileInputRef.current?.click();
@@ -53,7 +57,8 @@ export default function ChatMessageInput({ disabled, conversationId, onSend }) {
         contentType: 'text',
         attachments: [],
         createdAt: new Date(),
-        senderId: '8864c717-587d-472a-929a-8e5f298024da-0',
+        senderId: user.profile_id,
+        senderType: 'employer'
       });
     }
     return setMessage('');

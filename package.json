@@ -112,6 +112,7 @@
     "simplebar": "^5.3.6",
     "simplebar-react": "^2.3.6",
     "slick-carousel": "^1.8.1",
+    "socket.io-client": "^4.7.2",
     "stream-browserify": "^3.0.0",
     "stylis": "^4.1.0",
     "stylis-plugin-rtl": "^2.1.1",

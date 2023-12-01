@@ -9,6 +9,7 @@ import { useSelector } from '../../../redux/store';
 import useResponsive from '../../../hooks/useResponsive';
 // utils
 import axios from '../../../utils/axios';
+import { searchEmployerContacts } from '../../../api/staffwanted-api';
 // routes
 import { PATH_DASHBOARD } from '../../../routes/paths';
 // components
@@ -20,6 +21,7 @@ import ChatSearchResults from './ChatSearchResults';
 import ChatContactSearch from './ChatContactSearch';
 import ChatConversationList from './ChatConversationList';
 
+const _ = require('lodash');
 // ----------------------------------------------------------------------
 
 const ToggleButtonStyle = styled((props) => <IconButton disableRipple {...props} />)(({ theme }) => ({
@@ -45,6 +47,8 @@ const SIDEBAR_COLLAPSE_WIDTH = 96;
 
 export default function ChatSidebar() {
   const theme = useTheme();
+
+  const { user } = useSelector((state) => state.user);
 
   const navigate = useNavigate();
 
@@ -102,10 +106,9 @@ export default function ChatSidebar() {
       const { value } = event.target;
       setSearchQuery(value);
       if (value) {
-        const response = await axios.get('/api/chat/search', {
-          params: { query: value },
-        });
-        setSearchResults(response.data.results);
+        const { data } = await searchEmployerContacts(user.profile_id, value);
+        const contacts = await formatContacts(data);
+        setSearchResults(contacts);
       } else {
         setSearchResults([]);
       }
@@ -118,17 +121,40 @@ export default function ChatSidebar() {
     setSearchFocused(true);
   };
 
-  const handleSearchSelect = (username) => {
+  const handleSearchSelect = (result) => {
     setSearchFocused(false);
     setSearchQuery('');
-    navigate(PATH_DASHBOARD.chat.view(username));
+    console.log('handleSearchSelect', result);
+    if (result.conversation_key) {
+      navigate(PATH_DASHBOARD.chat.view(result.conversation_key.id));
+    } else {
+      navigate(PATH_DASHBOARD.chat.new);
+    }
   };
 
   const handleSelectContact = (result) => {
     if (handleSearchSelect) {
-      handleSearchSelect(result.username);
+      handleSearchSelect(result);
     }
   };
+
+  const formatContacts = async (contacts) => {
+    console.log('formatContacts', contacts);
+    const _contacts = _.map(contacts, contact => ({
+      id: contact.id,
+      name: `${contact.attributes.first_name} ${contact.attributes.last_name}`,
+      username: contact.attributes.first_name,
+      avatar: contact.attributes.avatar_url,
+      address: contact.attributes.location,
+      phone: contact.attributes.phone_number,
+      email: contact.attributes.email,
+      lastActivity: new Date(),
+      status: 'online',
+      conversation_key: contact.attributes.conversations.length !== 0 ? _.find(contact.attributes.conversations, item => item.employer.id === parseInt(user.profile_id, 10)) : null,
+    }));
+    console.log('formatContacts', _contacts);
+    return _contacts;
+  }
 
   const renderContent = (
     <>
@@ -227,4 +253,5 @@ export default function ChatSidebar() {
       )}
     </>
   );
+
 }

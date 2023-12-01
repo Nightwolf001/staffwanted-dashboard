@@ -14,7 +14,7 @@ import ChatConversationItem from './ChatConversationItem';
 ChatConversationList.propTypes = {
   conversations: PropTypes.object,
   isOpenSidebar: PropTypes.bool,
-  activeConversationId: PropTypes.string,
+  activeConversationId: PropTypes.number,
   sx: PropTypes.object,
 };
 
@@ -24,16 +24,16 @@ export default function ChatConversationList({ conversations, isOpenSidebar, act
   const handleSelectConversation = (conversationId) => {
     let conversationKey = '';
     const conversation = conversations.byId[conversationId];
-    if (conversation.type === 'GROUP') {
+    // if (conversation.type === 'GROUP') {
       conversationKey = conversation.id;
-    } else {
-      const otherParticipant = conversation.participants.find(
-        (participant) => participant.id !== '8864c717-587d-472a-929a-8e5f298024da-0'
-      );
-      if (otherParticipant?.username) {
-        conversationKey = otherParticipant?.username;
-      }
-    }
+    // } else {
+    //   const otherParticipant = conversation.participants.find(
+    //     (participant) => participant.id !== '8864c717-587d-472a-929a-8e5f298024da-0'
+    //   );
+    //   if (otherParticipant?.username) {
+    //     conversationKey = otherParticipant?.id;
+    //   }
+    // }
     navigate(PATH_DASHBOARD.chat.view(conversationKey));
   };
 

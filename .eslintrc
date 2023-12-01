@@ -61,6 +61,7 @@
     "no-unused-expressions": 0,
     "camelcase": 0,
     "no-plusplus": 0,
+    "no-await-in-loop": 0,
     "no-unused-vars": [
       1,
       {

@@ -49,7 +49,7 @@ ChatConversationItem.propTypes = {
 export default function ChatConversationItem({ isSelected, conversation, isOpenSidebar, onSelectConversation }) {
   const details = getDetails(conversation, '8864c717-587d-472a-929a-8e5f298024da-0');
 
-  const displayLastActivity = conversation.messages[conversation.messages.length - 1].createdAt;
+  const displayLastActivity = conversation.messages[conversation.messages.length - 1]?.createdAt || new Date();
 
   const isGroup = details.otherParticipants.length > 1;
   const isUnread = conversation.unreadCount > 0;

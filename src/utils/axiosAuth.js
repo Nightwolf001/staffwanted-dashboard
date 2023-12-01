@@ -5,7 +5,7 @@ import axios from 'axios';
 // ----------------------------------------------------------------------
 
 const axiosAuthInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_ENDPOINT,
+  // baseURL: process.env.REACT_APP_API_ENDPOINT,
   timeout: 20000,
   headers: {
     'Content-Type': 'application/json',

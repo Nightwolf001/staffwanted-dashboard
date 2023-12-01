@@ -12,7 +12,7 @@ import { Box, Stack, Button, Tooltip, TextField, IconButton, DialogActions } fro
 import { LoadingButton } from '@mui/lab';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
 // api
-import { createCalendarEvents } from '../../../../api/staffwanted-api';
+import { createCalendarEvents, createEventLog } from '../../../../api/staffwanted-api';
 // redux
 import { useDispatch, useSelector } from '../../../../redux/store';
 import { createEvent, updateEvent, deleteEvent } from '../../../../redux/slices/calendar';
@@ -39,7 +39,8 @@ const getInitialValues = (event, range) => {
     description: '',
     textColor: '#1890FF',
     allDay: false,
-    status: 'proposed', // 'proposed', 'accepted', 'declined', 'change', 'cancelled
+    employer_status: 'yes', // 'proposed', 'yes', 'no'
+    employee_status: 'pending', // 'proposed', 'yes', 'no'
     start: range ? new Date(range.start) : new Date(),
     end: range ? new Date(range.end) : new Date(),
   };
@@ -60,9 +61,11 @@ CalendarForm.propTypes = {
   job: PropTypes.object,
   job_match: PropTypes.object,
   employee: PropTypes.object,
+  refresh: PropTypes.bool,
+  setRefresh: PropTypes.func,
 };
 
-export default function CalendarForm({ event, range, employee, job, job_match, onCancel }) {
+export default function CalendarForm({ event, range, employee, job, job_match, onCancel, refresh, setRefresh }) {
   const { enqueueSnackbar } = useSnackbar();
 
   const dispatch = useDispatch();
@@ -76,7 +79,8 @@ export default function CalendarForm({ event, range, employee, job, job_match, o
     employee: Yup.number().required('Employee is required'),
     job: Yup.number().required('Job is required'),
     employer: Yup.number().required('Employer is required'),
-    status: Yup.string().required('Status is required'),
+    employer_status: Yup.string().required('Status is required'),
+    employee_status: Yup.string().required('Status is required'),
   });
 
   const methods = useForm({
@@ -91,33 +95,45 @@ export default function CalendarForm({ event, range, employee, job, job_match, o
     if(user) setValue('employer', user.profile_id);
     if (employee) setValue('employee', employee.id);
     if (job) setValue('job', job.id);
+    setValue('employer_status', 'yes');
+    setValue('employee_status', 'pending');
   }, [employee, job, user]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async () => {
     try {
       const newEvent = {
-        title: data.title,
-        description: data.description,
-        text_color: data.textColor,
-        all_day: data.allDay,
-        status: values.status,
+        title: values.title,
+        description: values.description,
+        text_color: values.textColor,
+        all_day: values.allDay,
+        employer_status: values.employer_status,
+        employee_status: values.employee_status,
         employee: values.employee,
         job: values.job,
         employer: values.employer,
-        start: data.start,
-        end: data.end,
+        start: values.start,
+        end: values.end,
       };
-      if (event.id) {
-        dispatch(updateEvent(event.id, newEvent));
 
-        enqueueSnackbar('Update success!');
-      } else {
+      const {data} = await createCalendarEvents(newEvent);
+      if(data) {
         enqueueSnackbar('Create success!');
-        const {data} = await createCalendarEvents(newEvent);
-        console.log('data', data);
+
+        const newEventLog = {
+          title: `meeting request RE: ${values.title}`,
+          description: values.description,
+          action: 'meeting',
+          employee: values.employee,
+          job: values.job,
+          employer: values.employer,
+          date_time: new Date(),
+        };
+        
+        await createEventLog(newEventLog);
+        setRefresh(!refresh);
+        onCancel();
+        reset();
       }
-      onCancel();
-      reset();
     } catch (error) {
       console.error(error);
     }
@@ -143,7 +159,7 @@ export default function CalendarForm({ event, range, employee, job, job_match, o
 
         <RHFTextField name="description" label="Description" multiline rows={4} />
 
-        <RHFSwitch name="allDay" label="All day" />
+        {/* <RHFSwitch name="allDay" label="All day" /> */}
 
         <Controller
           name="start"

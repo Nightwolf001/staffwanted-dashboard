@@ -1,17 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 // @mui
 import { Box, Divider, Stack } from '@mui/material';
+// context
+import { SocketContext } from '../../../contexts/SocketContext';
 // redux
 import { useDispatch, useSelector } from '../../../redux/store';
-import {
-  addRecipients,
-  onSendMessage,
-  getConversation,
-  getParticipants,
-  markConversationAsRead,
-  resetActiveConversation,
-} from '../../../redux/slices/chat';
+import { addRecipients, onSendMessage, getConversation, getParticipants, markConversationAsRead, resetActiveConversation, onRecieveMessage } from '../../../redux/slices/chat';
+// api
+import { broadcastMessage } from '../../../api/events-manager-api';
+// socket
+import { socket } from '../../../socket';
 // routes
 import { PATH_DASHBOARD } from '../../../routes/paths';
 //
@@ -21,14 +20,15 @@ import ChatHeaderDetail from './ChatHeaderDetail';
 import ChatMessageInput from './ChatMessageInput';
 import ChatHeaderCompose from './ChatHeaderCompose';
 
+const _ = require('lodash');
+
 // ----------------------------------------------------------------------
 
 const conversationSelector = (state) => {
   const { conversations, activeConversationId } = state.chat;
   const conversation = activeConversationId ? conversations.byId[activeConversationId] : null;
-  if (conversation) {
-    return conversation;
-  }
+  if (conversation) { return conversation }
+
   const initState = {
     id: '',
     messages: [],
@@ -40,14 +40,16 @@ const conversationSelector = (state) => {
 };
 
 export default function ChatWindow() {
+
+  const { recievedMessage } = useContext(SocketContext);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { conversationKey } = useParams();
   const { contacts, recipients, participants, activeConversationId } = useSelector((state) => state.chat);
   const conversation = useSelector((state) => conversationSelector(state));
-
   const mode = conversationKey ? 'DETAIL' : 'COMPOSE';
+
   const displayParticipants = participants.filter((item) => item.id !== '8864c717-587d-472a-929a-8e5f298024da-0');
 
   useEffect(() => {
@@ -56,7 +58,6 @@ export default function ChatWindow() {
       try {
         await dispatch(getConversation(conversationKey));
       } catch (error) {
-        console.error(error);
         navigate(PATH_DASHBOARD.chat.new);
       }
     };
@@ -64,6 +65,8 @@ export default function ChatWindow() {
       getDetails();
     } else if (activeConversationId) {
       dispatch(resetActiveConversation());
+    } else {
+      navigate(PATH_DASHBOARD.chat.new);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationKey]);
@@ -74,6 +77,12 @@ export default function ChatWindow() {
     }
   }, [dispatch, activeConversationId]);
 
+  useEffect(() => {
+    if (recievedMessage.length !== 0 ) {
+      handleRecieveMessage(recievedMessage);
+    }
+  }, [recievedMessage]);
+
   const handleAddRecipients = (recipients) => {
     dispatch(addRecipients(recipients));
   };
@@ -81,6 +90,20 @@ export default function ChatWindow() {
   const handleSendMessage = async (value) => {
     try {
       dispatch(onSendMessage(value));
+      console.log('value', value);
+      console.log('participants', participants);
+      const {id} = participants.find((participant) => participant.id !== value.senderId);
+      console.log('participantKey', id);
+      const topic = `message:employee:${id}`;
+      const { data } = await broadcastMessage(topic, value);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleRecieveMessage = async (value) => {
+    try {
+      dispatch(onRecieveMessage(value));
     } catch (error) {
       console.error(error);
     }

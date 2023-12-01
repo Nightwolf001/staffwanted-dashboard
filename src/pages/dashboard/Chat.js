@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 // @mui
 import { Card, Container } from '@mui/material';
 // redux
-import { useDispatch } from '../../redux/store';
+import { useDispatch, useSelector } from '../../redux/store';
 import { getConversations, getContacts } from '../../redux/slices/chat';
 // routes
 import { PATH_DASHBOARD } from '../../routes/paths';
@@ -16,12 +16,15 @@ import { ChatSidebar, ChatWindow } from '../../sections/@dashboard/chat';
 // ----------------------------------------------------------------------
 
 export default function Chat() {
+  
   const { themeStretch } = useSettings();
   const dispatch = useDispatch();
 
+  const { user } = useSelector((state) => state.user);
+
   useEffect(() => {
-    dispatch(getConversations());
-    dispatch(getContacts());
+    dispatch(getConversations(user.profile_id));
+    dispatch(getContacts(user.profile_id));
   }, [dispatch]);
 
   return (

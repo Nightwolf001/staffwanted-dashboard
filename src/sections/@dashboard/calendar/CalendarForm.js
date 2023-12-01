@@ -8,12 +8,12 @@ import { useSnackbar } from 'notistack';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 // @mui
-import { Box, Stack, Button, Tooltip, TextField, IconButton, DialogActions } from '@mui/material';
+import { Box, Stack, Button, Tooltip, TextField, IconButton, DialogActions, Divider, Grid, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
 import _ from 'lodash';
 // api
-import { getEmployerJobs, getApplicantsByJobs } from '../../../api/staffwanted-api';
+import { getEmployerJobs, getApplicantsByJobs, createEventLog } from '../../../api/staffwanted-api';
 // redux
 import { useDispatch, useSelector } from '../../../redux/store';
 import { createEvent, updateEvent, deleteEvent } from '../../../redux/slices/calendar';
@@ -40,7 +40,8 @@ const getInitialValues = (event, range) => {
     description: '',
     textColor: '#1890FF',
     allDay: false,
-    status: 'proposed', // 'proposed', 'accepted', 'declined', 'change', 'cancelled
+    employer_status: 'yes', // 'proposed', 'yes', 'no'
+    employee_status: 'pending', // 'proposed', 'yes', 'no'
     job: '',
     employee: '',
     employer: '',
@@ -69,7 +70,8 @@ const ValidationSchema = Yup.object().shape({
   job: Yup.number().required('Job is required'),
   employee: Yup.object().shape({ label: Yup.string().required('Label is required'), value: Yup.string().required('Value is required') }).required('Applicant is required'),
   employer: Yup.number().required('Employer is required'),
-  status: Yup.string().required('Status is required'),
+  employer_status: Yup.string().required('Status is required'),
+  employee_status: Yup.string().required('Status is required'),
   textColor: Yup.string(),
   allDay: Yup.boolean(),
   start: Yup.date().required('Start date is required'),
@@ -82,8 +84,10 @@ export default function CalendarForm({ event, range, onCancel }) {
   const isCreating = Object.keys(event).length === 0;
 
   const methods = useForm({ 
+    mode: 'onTouched',
     resolver: yupResolver(ValidationSchema), 
     defaultValues: getInitialValues(event, range),
+    shouldFocusError: true,
   });
 
   const { reset, watch, control, handleSubmit, setValue, formState: { isSubmitting } } = methods;
@@ -100,15 +104,21 @@ export default function CalendarForm({ event, range, onCancel }) {
   useEffect(() => {
     (async () => {
       if(user.profile_id) {
+
         setValue('employer', user.profile_id);
         const { data } = await getEmployerJobs(user.profile_id);
         setJobs(data);
-      }
 
-      if(isCreating) {
-        setValue('status', 'proposed');
+        if (isCreating) {
+          setValue('employer_status', 'yes');
+          setValue('employee_status', 'pending');
+        } else {
+          setDisabled(false);
+          setValue('job', event.job.data.id);
+          setValue('employer_status', event.employer_status);
+          setValue('employee_status', event.employee_status);
+        }
       }
-
     })();
   }, [user, isCreating]);
 
@@ -119,35 +129,61 @@ export default function CalendarForm({ event, range, onCancel }) {
         const { data } = await getApplicantsByJobs(values.job);
         const employees = _.map(data, item => ({ label: `${item.attributes.first_name} ${item.attributes.last_name}`, value: item.id, }));
         setEmployees(employees);
+
+        if (!isCreating) {
+          const employee = _.find(employees, item => item?.value === event.employee);
+          setValue('employee', employee);
+        }
       } else {
         setDisabled(true);
       }
     })();
   }, [values.job]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async () => {
     try {
+
       const newEvent = {
-        title: data.title,
-        description: data.description,
-        textColor: data.textColor,
-        allDay: data.allDay,
-        start: data.start,
-        end: data.end,
+        title: values.title,
+        description: values.description,
+        text_color: values.textColor,
+        all_day: values.allDay,
+        employer_status: values.employer_status,
+        employee_status: values.employee_status,
+        employee: values.employee.value,
+        job: values.job,
+        employer: values.employer,
+        start: values.start,
+        end: values.end,
       };
+      
       if (event.id) {
         dispatch(updateEvent(event.id, newEvent));
         enqueueSnackbar('Update success!');
       } else {
-        enqueueSnackbar('Create success!');
         dispatch(createEvent(newEvent));
+        enqueueSnackbar('Create success!');
       }
+
+      const newEventLog = {
+        title: event.id ? `meeting update RE: ${values.title}` : `meeting request RE: ${values.title}`,
+        description: values.description,
+        action: 'meeting',
+        employee: values.employee,
+        job: values.job,
+        employer: values.employer,
+        date_time: new Date(),
+      };
+
+      await createEventLog(newEventLog);
       onCancel();
       reset();
     } catch (error) {
       console.error(error);
     }
   };
+
+  const handelStatusChange = async (status) => {};
 
   const handleDelete = async () => {
     if (!event.id) return;
@@ -189,7 +225,7 @@ export default function CalendarForm({ event, range, onCancel }) {
           <RHFTextField name="title" label="Title" />
           <RHFTextField name="description" label="Description" multiline rows={4} />
 
-          <RHFSwitch name="allDay" label="All day" />
+          {/* <RHFSwitch name="allDay" label="All day" /> */}
 
           <Controller
             name="start"
@@ -234,7 +270,30 @@ export default function CalendarForm({ event, range, onCancel }) {
         </>
         }
       </Stack>
+      {!isCreating && (
+        <>
+          <Divider />
+          <Grid container spacing={2} sx={{ p: 3, alignItems: 'center' }}>
+            <Grid item xs={6}>
+              <Typography variant={'subTitle2'}>
+                Going ?
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Button onClick={() => handelStatusChange('yes')} fullWidth variant={values.employer_status === 'yes' ? 'contained' : 'outlined'}>
+                  Yes
+                </Button>
 
+                <Button onClick={() => handelStatusChange('no')} fullWidth variant={values.employer_status === 'no' ? 'contained' : 'outlined'}>
+                  No
+                </Button>
+              </Stack>
+            </Grid>
+          </Grid>
+          <Divider />
+        </>
+      )}
       <DialogActions>
         {!isCreating && (
           <Tooltip title="Delete Event">
@@ -246,11 +305,11 @@ export default function CalendarForm({ event, range, onCancel }) {
         <Box sx={{ flexGrow: 1 }} />
 
         <Button variant="outlined" color="inherit" onClick={onCancel}>
-          Cancel
+          {isCreating ? 'Cancel' : 'Close'}
         </Button>
 
-        <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
-          Add
+        <LoadingButton disabled={disabled} type="submit" variant="contained" loading={isSubmitting}>
+          {isCreating ? 'Add' : 'Update'}
         </LoadingButton>
       </DialogActions>
     </FormProvider>

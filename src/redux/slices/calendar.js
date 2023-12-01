@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import moment from 'moment';
 // utils
 import axios from '../../utils/axios';
-import { getCalendarEvents, createCalendarEvents } from '../../api/staffwanted-api';
+import { getCalendarEvents, createCalendarEvents, updateCalendarEvents } from '../../api/staffwanted-api';
 //
 import { dispatch } from '../store';
 
@@ -96,19 +96,22 @@ const slice = createSlice({
 });
 
 const formatEvents = async (rawEvents) => {
+  console.log('formatEvents', rawEvents);
   const events = _.map(rawEvents, event => ({
     id: event.id,
     title: event.attributes.title,
     description: event.attributes.description,
     allDay: event.attributes.all_day,
-    status: event.attributes.status,
+    employer_status: event.attributes.employer_status,
+    employee_status: event.attributes.employee_status,
     textColor: event.attributes.text_color,
-    job: event.attributes.job.data.attributes.id,
-    employee: event.attributes.employee.data.attributes.id,
-    employer: event.attributes.employer.data.attributes.id,
+    job: event.attributes.job.data.id,
+    employee: event.attributes.employee.data.id,
+    employer: event.attributes.employer.data.id,
     start: new Date(event.attributes.start),
     end: new Date(event.attributes.end),
   })); 
+  console.log('formatEvents', events);
   return events;
 }
 
@@ -118,11 +121,12 @@ const formatEvent = async (rawEvent) => {
     title: rawEvent.attributes.title,
     description: rawEvent.attributes.description,
     allDay: rawEvent.attributes.all_day,
-    status: rawEvent.attributes.status,
+    employer_status: rawEvent.attributes.employer_status,
+    employee_status: rawEvent.attributes.employee_status,
     textColor: rawEvent.attributes.text_color,
-    job: rawEvent.attributes.job.data.attributes.id,
-    employee: rawEvent.attributes.employee.data.attributes.id,
-    employer: rawEvent.attributes.employer.data.attributes.id,
+    job: rawEvent.attributes.job.data.id,
+    employee: rawEvent.attributes.employee.data.id,
+    employer: rawEvent.attributes.employer.data.id,
     start: new Date(rawEvent.attributes.start),
     end: new Date(rawEvent.attributes.end),
   };
@@ -141,7 +145,6 @@ export function getEvents(id) {
   return async () => {
     dispatch(slice.actions.startLoading());
     try {
-     
       const { data } = await getCalendarEvents(id);
       const events = await formatEvents(data);
       dispatch(slice.actions.getEventsSuccess(events));
@@ -172,11 +175,9 @@ export function updateEvent(eventId, updateEvent) {
   return async () => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await axios.post('/api/calendar/events/update', {
-        eventId,
-        updateEvent,
-      });
-      dispatch(slice.actions.updateEventSuccess(response.data.event));
+      const { data } = await updateCalendarEvents(eventId, updateEvent);
+      const event = await formatEvent(data);
+      dispatch(slice.actions.updateEventSuccess(event));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }

@@ -9,9 +9,11 @@ import { useForm, Controller } from 'react-hook-form';
 import { styled, useTheme } from '@mui/material/styles';
 import { Link, Card, Typography, CardHeader, Stack, Box, Chip, Button, Grid, DialogTitle } from '@mui/material';
 // api
-import { fetchLocationDetials, updateApplicationStatus } from '../../../../api/staffwanted-api';
+import { getEventLogs, updateApplicationStatus } from '../../../../api/staffwanted-api';
 // components
 import { CalendarForm } from '../calendar';
+import { EventForm } from '../event';
+import ApplicationTimeline from './ApplicationTimeline';
 import Label from '../../../../components/Label';
 import Iconify from '../../../../components/Iconify';
 import { DialogAnimate } from '../../../../components/animate';
@@ -43,9 +45,11 @@ ApplicaitionManagement.propTypes = {
   job: PropTypes.object,
   job_match: PropTypes.object,
   employee: PropTypes.object,
+  refresh: PropTypes.bool,
+  setRefresh: PropTypes.func,
 };
 
-export default function ApplicaitionManagement({ employee, job, job_match }) {
+export default function ApplicaitionManagement({ employee, job, job_match, refresh, setRefresh }) {
 
   const theme = useTheme();
 
@@ -64,8 +68,10 @@ export default function ApplicaitionManagement({ employee, job, job_match }) {
   const [candidate, setCandidate] = useState(employee.attributes);
   const [jobMatch, setJobMatch] = useState(job_match.attributes);
   const [currentJob, setCurrentJob] = useState(job.attributes);
+  const [timelineEvents, setTimelineEvents] = useState([]);
 
   const [isOpenModal, setOpenModal] = useState(false);
+  const [action, setAction] = useState('');
 
   const { first_name, last_name, email, phone_number, date_of_birth, gender, place_id } = candidate;
   const { id, application_status, applied, bookmarked, status_description, createdAt } = jobMatch;
@@ -85,7 +91,8 @@ export default function ApplicaitionManagement({ employee, job, job_match }) {
     }
   };
 
-  const handleAddMeeting = () => {
+  const handleAction = (action) => {
+    setAction(action);
     setOpenModal(true);
   };
 
@@ -93,67 +100,34 @@ export default function ApplicaitionManagement({ employee, job, job_match }) {
     setOpenModal(false);
   };
 
+  const handelGetEventLogs = async () => {
+    const { data } = await getEventLogs(job.id, employee.id);
+    setTimelineEvents(data);
+    setRefresh(false);
+  }
+
+  useEffect(() => {
+    (async () => {
+      await handelGetEventLogs();
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      if(refresh) {
+        await handelGetEventLogs();
+      }
+    })();
+  }, [refresh]);
+
   return (
     <Box>    
     {application_status === 'reviewing' &&
     <>
       <Box>
-        <Grid sx={{ mb: 3 }} container spacing={2}>
-          <Grid item xs={3}>
-              <Card sx={{cursor: 'pointer'}}>
-                <Stack alignItems="center" spacing={2} sx={{ p: 3 }} direction="column" >
-                  <IconStyle icon={'mdi:phone'} />
-                  <Typography variant="subtitle2" color="text.primary">
-                      Log an call
-                  </Typography>
-                </Stack>
-              </Card>
-          </Grid>
-          <Grid item xs={3}>
-            <Card sx={{ cursor: 'pointer' }}>
-              <Stack alignItems="center" spacing={2} sx={{ p: 3 }} direction="column" >
-                <IconStyle icon={'mdi:mail'} />
-                <Typography variant="subtitle2" color="text.primary">
-                  Log an email
-                </Typography>
-              </Stack>
-            </Card>
-          </Grid>
-          <Grid item xs={3}>
-            <Card sx={{ cursor: 'pointer' }}>
-              <Stack alignItems="center" spacing={2} sx={{ p: 3 }} direction="column" >
-                <IconStyle icon={'mdi:chat'} />
-                <Typography variant="subtitle2" color="text.primary">
-                  Start conversation
-                </Typography>
-              </Stack>
-            </Card>
-          </Grid>
-          <Grid item xs={3}>
-              <Card onClick={() => handleAddMeeting()} sx={{ cursor: 'pointer' }}>
-              <Stack alignItems="center" spacing={2} sx={{ p: 3 }} direction="column" >
-                <IconStyle icon={'mdi:calendar'} />
-                <Typography variant="subtitle2" color="text.primary">
-                  Request a meeting
-                </Typography>
-              </Stack>
-            </Card>
-          </Grid>
-        </Grid>
         <Card sx={{ mb: 3 }}>
-          <CardHeader title="Application Notes & Records" />
-              <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)} >
-                  <Grid container spacing={3} sx={{ p: 3 }}>
-                    <Grid item xs={12}>
-                      <div>
-                        <LabelStyle>Notes</LabelStyle>
-                        <RHFEditor simple name="notes" />
-                      </div>
-                    </Grid>
-                  </Grid>
-              </FormProvider>
+            <ApplicationTimeline title="Application Timeline and Events" list={timelineEvents} />
         </Card>
-
         <Card sx={{ mb: 3 }}>
           <CardHeader title="Application Status" />
           <Stack direction="row" spacing={2} alignItems="flex-end" sx={{ p: 3, flexGrow: 1 }}>
@@ -167,10 +141,6 @@ export default function ApplicaitionManagement({ employee, job, job_match }) {
           </Stack>
         </Card>
       </Box>
-      <DialogAnimate open={isOpenModal} onClose={handleCloseModal}>
-          <DialogTitle>{'Request a meeting'}</DialogTitle>
-          <CalendarForm event={{}} range={null} employee={employee} job={job} job_match={job_match} onCancel={handleCloseModal} />
-      </DialogAnimate>
     </>
     }
     </Box>
